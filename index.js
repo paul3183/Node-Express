@@ -18,22 +18,32 @@ app.post('/tasks', async (req, res) => { //para postear en redes, lo que se pide
   const arrayToodos = JSON.parse(await fs.readFile(jsonPath, 'utf-8')); //porque await? funcion asyncrona:para detener y que pueda leer, cuando node va tardar en realizar una tarea la delega aun hilo en el sistema, await, que termine de leerlo me lo devuelva , es un formato que lee del navegador
   console.log(arrayToodos);
   // dandole un id
-  const lastId = arrayToodos.length + 1; // dieguito mazamorra: arrayToodos[arrayToodos.length - 1].id + 1 
-  arrayToodos.push({ id: lastId, ...jsonPost }) // desestructuracion de array
+  const id = arrayToodos.length + 1; // codigo dieguito mazamorra: arrayToodos[arrayToodos.length - 1].id + 1 
+  arrayToodos.push({ id, ...jsonPost }) // desestructuracion de array
   await fs.writeFile(jsonPath, JSON.stringify(arrayToodos)) // node se va tardar , cuando lo resuevas dame el archivo
   console.log(jsonPost);
   res.send('se logro postear con exito')
 })
 
 app.put('/tasks', async (req, res) => { // el put es para modificar , le agrega un endpoint a la api
-  const { status, id } = req.body // destructurando todo el array para conseguir el status y id, en el cliente
-  const jsonPut = JSON.parse(await fs.readFile(jsonPath, 'utf-8'))
-  const putId = jsonPut.findIndex((toodos) => toodos.id === id)
-  if (putId >= 0) {
-    jsonPut[putId].status = status
-  }
-  await fs.writeFile(jsonPath, JSON.stringify(jsonPut))
-  res.send('se logro modificar con exito')
+  // const { status, id } = req.body // destructurando todo el array para conseguir el status y id, en el cliente
+  // const jsonPut = JSON.parse(await fs.readFile(jsonPath, 'utf-8'))
+  // const putId = jsonPut.findIndex((toodos) => toodos.id === id)
+  // if (putId >= 0) {
+  //   jsonPut[putId].status = status
+  // }
+  // await fs.writeFile(jsonPath, JSON.stringify(jsonPut))
+  // res.send('se logro modificar con exito')
+  const task = req.body;
+  const taskArray = JSON.parse(await fs.readFile(jsonPath, 'utf-8'));
+  const taskEdited = taskArray.map((e) => {
+    if (e.id === task.id) {
+      e = task
+    }
+    return e
+  })
+  await fs.writeFile(jsonPath, JSON.stringify(taskEdited));
+  res.send('se logro modificar con exito');
 })
 
 app.delete('/tasKs', async (req, res) => { // req y res es toma que te doy
@@ -46,7 +56,14 @@ app.delete('/tasKs', async (req, res) => { // req y res es toma que te doy
   await fs.writeFile(jsonPath, JSON.stringify(deletejson)) // lo convierte a formato json y lo escribe y lo junta
   res.send('se logro eliminar el id correctamente')
 })
-//hola robert
+//other-solutions:
+// const task = req.body;
+// const tasksArray = JSON.parse(await fs.readFile(jsonPath, 'utf-8'))
+// const tasksFiltered = tasksArray.filter((el) => {
+// return el.id !== task.id
+// })
+// await fs.writeFile(jsonPath, JSON.stringify(tasksFiltered))
+// res.end();
 
 const PORT = 8000;
 app.listen(PORT, () => { console.log(`servidor escuchando en el puerto ${PORT}`) });
